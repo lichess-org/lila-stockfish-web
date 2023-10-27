@@ -1,0 +1,123 @@
+diff --git a/src/evaluate.cpp b/src/evaluate.cpp
+index 396d5ff6..2cfe432e 100644
+--- a/src/evaluate.cpp
++++ b/src/evaluate.cpp
+@@ -77,6 +77,8 @@ namespace Eval {
+   void NNUE::init() {
+ 
+     useNNUE = Options["Use NNUE"];
++    return;
++
+     if (!useNNUE)
+         return;
+ 
+@@ -140,6 +142,8 @@ namespace Eval {
+   /// NNUE::verify() verifies that the last net used was loaded successfully
+   void NNUE::verify() {
+ 
++    return;
++    
+     string eval_file = string(Options["EvalFile"]);
+ 
+     if (useNNUE && eval_file.find(eval_file_loaded) == string::npos)
+diff --git a/src/main.cpp b/src/main.cpp
+index afad7f13..87763a2d 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -41,7 +41,6 @@ int main(int argc, char* argv[]) {
+ 
+   pieceMap.init();
+   variants.init();
+-  CommandLine::init(argc, argv);
+   UCI::init(Options);
+   Tune::init();
+   PSQT::init(variants.find(Options["UCI_Variant"])->second);
+diff --git a/src/nnue/nnue_feature_transformer.h b/src/nnue/nnue_feature_transformer.h
+index fbb0c455..1a36507f 100644
+--- a/src/nnue/nnue_feature_transformer.h
++++ b/src/nnue/nnue_feature_transformer.h
+@@ -32,10 +32,7 @@ namespace Stockfish::Eval::NNUE {
+   using WeightType     = std::int16_t;
+   using PSQTWeightType = std::int32_t;
+ 
+-  // If vector instructions are enabled, we update and refresh the
+-  // accumulator tile by tile such that each tile fits in the CPU's
+-  // vector registers.
+-  #define VECTOR
++  // For WASM, let clang auto-vectorize
+ 
+   static_assert(PSQTBuckets % 8 == 0,
+     "Per feature PSQT values cannot be processed at granularity lower than 8 at a time.");
+diff --git a/src/search.cpp b/src/search.cpp
+index 77686ed0..b2db2bdd 100644
+--- a/src/search.cpp
++++ b/src/search.cpp
+@@ -1987,7 +1987,7 @@ void MainThread::check_time() {
+ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
+ 
+   std::stringstream ss;
+-  TimePoint elapsed = Time.elapsed() + 1;
++  TimePoint elapsed = std::max(Time.elapsed() + 1, TimePoint(1));
+   const RootMoves& rootMoves = pos.this_thread()->rootMoves;
+   size_t pvIdx = pos.this_thread()->pvIdx;
+   size_t multiPV = std::min((size_t)Options["MultiPV"], rootMoves.size());
+diff --git a/src/tt.cpp b/src/tt.cpp
+index 5982d937..062bdf62 100644
+--- a/src/tt.cpp
++++ b/src/tt.cpp
+@@ -85,6 +85,10 @@ void TranspositionTable::resize(size_t mbSize) {
+ 
+ void TranspositionTable::clear() {
+ 
++  std::memset(table, 0, clusterCount * sizeof(Cluster));
++  // no new threads for wasm, otherwise terrible things.
++  return;
++
+   std::vector<std::thread> threads;
+ 
+   for (size_t idx = 0; idx < Options["Threads"]; ++idx)
+diff --git a/src/uci.cpp b/src/uci.cpp
+index 584977aa..1f48c2b0 100644
+--- a/src/uci.cpp
++++ b/src/uci.cpp
+@@ -36,6 +36,8 @@
+ 
+ using namespace std;
+ 
++std::string js_getline(); // wasm/glue.cpp
++
+ namespace Stockfish {
+ 
+ extern vector<string> setup_bench(const Position&, istream&);
+@@ -324,8 +326,7 @@ void UCI::loop(int argc, char* argv[]) {
+   }
+ 
+   do {
+-      if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
+-          cmd = "quit";
++      cmd = js_getline();
+ 
+       istringstream is(cmd);
+ 
+@@ -416,7 +417,7 @@ void UCI::loop(int argc, char* argv[]) {
+       else if (!token.empty() && token[0] != '#')
+           sync_cout << "Unknown command: " << cmd << sync_endl;
+ 
+-  } while (token != "quit" && argc == 1); // Command line args are one-shot
++  } while (token != "quit"); // Command line args are one-shot
+ }
+ 
+ 
+diff --git a/src/ucioption.cpp b/src/ucioption.cpp
+index 0326e047..04053a38 100644
+--- a/src/ucioption.cpp
++++ b/src/ucioption.cpp
+@@ -200,7 +200,7 @@ void init(OptionsMap& o) {
+   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
+   o["Syzygy50MoveRule"]      << Option(true);
+   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
+-  o["Use NNUE"]              << Option(true, on_use_NNUE);
++  o["Use NNUE"]              << Option(false, on_use_NNUE);
+ #ifndef NNUE_EMBEDDING_OFF
+   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
+ #else

@@ -1,0 +1,26 @@
+{
+  "name": "lila-stockfish-web",
+  "version": "0.0.1",
+  "author": "T-bone Duplexus",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "types": "stockfishWeb.d.ts",
+  "files": [
+    "linrock-nnue-7.js",
+    "linrock-nnue-7.wasm",
+    "linrock-nnue-7.worker.js",
+    "linrock-nnue-12.js",
+    "linrock-nnue-12.wasm",
+    "linrock-nnue-12.worker.js",
+    "sf-nnue-40.js",
+    "sf-nnue-40.wasm",
+    "sf-nnue-40.worker.js",
+    "sf-nnue-60.js",
+    "sf-nnue-60.wasm",
+    "sf-nnue-60.worker.js",
+    "fsf-hce.js",
+    "fsf-hce.wasm",
+    "fsf-hce.worker.js",
+    "stockfishWeb.d.ts"
+  ]
+}

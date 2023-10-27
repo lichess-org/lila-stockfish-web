@@ -1,0 +1,125 @@
+diff --git a/src/evaluate.cpp b/src/evaluate.cpp
+index 538214d3..8f343f78 100644
+--- a/src/evaluate.cpp
++++ b/src/evaluate.cpp
+@@ -74,8 +74,7 @@ namespace Eval {
+   void NNUE::init() {
+ 
+     useNNUE = Options["Use NNUE"];
+-    if (!useNNUE)
+-        return;
++    return;
+ 
+     string eval_file = string(Options["EvalFile"]);
+ 
+@@ -116,6 +115,7 @@ namespace Eval {
+ 
+   /// NNUE::verify() verifies that the last net used was loaded successfully
+   void NNUE::verify() {
++    return; // looks good to me
+ 
+     string eval_file = string(Options["EvalFile"]);
+ 
+diff --git a/src/main.cpp b/src/main.cpp
+index 62e0ed52..383817f4 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -34,7 +34,6 @@ int main(int argc, char* argv[]) {
+ 
+   std::cout << engine_info() << std::endl;
+ 
+-  CommandLine::init(argc, argv);
+   UCI::init(Options);
+   Tune::init();
+   PSQT::init();
+diff --git a/src/misc.cpp b/src/misc.cpp
+index 9e7b7e37..b59327f8 100644
+--- a/src/misc.cpp
++++ b/src/misc.cpp
+@@ -67,7 +67,7 @@ namespace {
+ 
+ /// Version number. If Version is left empty, then compile date in the format
+ /// DD-MM-YY and show in engine_info.
+-const string Version = "";
++const string Version = "16";
+ 
+ /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
+ /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
+diff --git a/src/nnue/nnue_feature_transformer.h b/src/nnue/nnue_feature_transformer.h
+index 59a965ac..31b14dab 100644
+--- a/src/nnue/nnue_feature_transformer.h
++++ b/src/nnue/nnue_feature_transformer.h
+@@ -32,10 +32,7 @@ namespace Stockfish::Eval::NNUE {
+   using WeightType     = std::int16_t;
+   using PSQTWeightType = std::int32_t;
+ 
+-  // If vector instructions are enabled, we update and refresh the
+-  // accumulator tile by tile such that each tile fits in the CPU's
+-  // vector registers.
+-  #define VECTOR
++  // For WASM, let clang auto-vectorize
+ 
+   static_assert(PSQTBuckets % 8 == 0,
+     "Per feature PSQT values cannot be processed at granularity lower than 8 at a time.");
+diff --git a/src/search.cpp b/src/search.cpp
+index fef1b518..669a79ca 100644
+--- a/src/search.cpp
++++ b/src/search.cpp
+@@ -1893,6 +1893,9 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
+ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
+ 
+     RootInTB = false;
++    Cardinality = 0;
++    return;
++
+     UseRule50 = bool(Options["Syzygy50MoveRule"]);
+     ProbeDepth = int(Options["SyzygyProbeDepth"]);
+     Cardinality = int(Options["SyzygyProbeLimit"]);
+diff --git a/src/tt.cpp b/src/tt.cpp
+index 1f495ca9..383b7eb1 100644
+--- a/src/tt.cpp
++++ b/src/tt.cpp
+@@ -85,6 +85,10 @@ void TranspositionTable::resize(size_t mbSize) {
+ 
+ void TranspositionTable::clear() {
+ 
++  std::memset(table, 0, clusterCount * sizeof(Cluster));
++  // no new threads for wasm, otherwise terrible things.
++  return;
++
+   std::vector<std::thread> threads;
+ 
+   for (size_t idx = 0; idx < Options["Threads"]; ++idx)
+diff --git a/src/uci.cpp b/src/uci.cpp
+index b3738a4a..d9f2b633 100644
+--- a/src/uci.cpp
++++ b/src/uci.cpp
+@@ -34,6 +34,8 @@
+ 
+ using namespace std;
+ 
++std::string js_getline(); // wasm/glue.cpp
++
+ namespace Stockfish {
+ 
+ extern vector<string> setup_bench(const Position&, istream&);
+@@ -240,9 +242,7 @@ void UCI::loop(int argc, char* argv[]) {
+       cmd += std::string(argv[i]) + " ";
+ 
+   do {
+-      if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
+-          cmd = "quit";
+-
++      cmd = js_getline();
+       istringstream is(cmd);
+ 
+       token.clear(); // Avoid a stale if getline() returns empty or blank line
+@@ -288,7 +288,7 @@ void UCI::loop(int argc, char* argv[]) {
+       else if (!token.empty() && token[0] != '#')
+           sync_cout << "Unknown command: " << cmd << sync_endl;
+ 
+-  } while (token != "quit" && argc == 1); // Command line args are one-shot
++  } while (token != "quit");
+ }
+ 
+ 

@@ -1,0 +1,114 @@
+diff --git a/src/evaluate.cpp b/src/evaluate.cpp
+index c405cfb5..3aeb492c 100644
+--- a/src/evaluate.cpp
++++ b/src/evaluate.cpp
+@@ -66,6 +66,8 @@ std::string currentEvalFileName = "None";
+ // variable to have the engine search in a special directory in their distro.
+ void NNUE::init() {
+ 
++    return;
++
+     std::string eval_file = std::string(Options["EvalFile"]);
+     if (eval_file.empty())
+         eval_file = EvalFileDefaultName;
+@@ -112,6 +114,7 @@ void NNUE::init() {
+ 
+ // Verifies that the last net used was loaded successfully
+ void NNUE::verify() {
++    return; // looks good to me
+ 
+     std::string eval_file = std::string(Options["EvalFile"]);
+     if (eval_file.empty())
+diff --git a/src/main.cpp b/src/main.cpp
+index 04879cc4..be8780b4 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -35,7 +35,6 @@ int main(int argc, char* argv[]) {
+ 
+     std::cout << engine_info() << std::endl;
+ 
+-    CommandLine::init(argc, argv);
+     UCI::init(Options);
+     Tune::init();
+     Bitboards::init();
+diff --git a/src/nnue/nnue_feature_transformer.h b/src/nnue/nnue_feature_transformer.h
+index 2af80f07..7b040695 100644
+--- a/src/nnue/nnue_feature_transformer.h
++++ b/src/nnue/nnue_feature_transformer.h
+@@ -40,10 +40,7 @@ using BiasType       = std::int16_t;
+ using WeightType     = std::int16_t;
+ using PSQTWeightType = std::int32_t;
+ 
+-// If vector instructions are enabled, we update and refresh the
+-// accumulator tile by tile such that each tile fits in the CPU's
+-// vector registers.
+-#define VECTOR
++// For WASM, let clang auto-vectorize
+ 
+ static_assert(PSQTBuckets % 8 == 0,
+               "Per feature PSQT values cannot be processed at granularity lower than 8 at a time.");
+diff --git a/src/search.cpp b/src/search.cpp
+index 9cef7e5f..4bf7d231 100644
+--- a/src/search.cpp
++++ b/src/search.cpp
+@@ -1897,7 +1897,10 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
+ 
+ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
+ 
+-    RootInTB           = false;
++    RootInTB = false;
++    Cardinality = 0;
++    return;
++
+     UseRule50          = bool(Options["Syzygy50MoveRule"]);
+     ProbeDepth         = int(Options["SyzygyProbeDepth"]);
+     Cardinality        = int(Options["SyzygyProbeLimit"]);
+diff --git a/src/tt.cpp b/src/tt.cpp
+index 816d43f8..1299eea0 100644
+--- a/src/tt.cpp
++++ b/src/tt.cpp
+@@ -82,6 +82,10 @@ void TranspositionTable::resize(size_t mbSize) {
+ // in a multi-threaded way.
+ void TranspositionTable::clear() {
+ 
++    std::memset(table, 0, clusterCount * sizeof(Cluster));
++    // no new threads for wasm, otherwise terrible things.
++    return;
++
+     std::vector<std::thread> threads;
+ 
+     for (size_t idx = 0; idx < size_t(Options["Threads"]); ++idx)
+diff --git a/src/uci.cpp b/src/uci.cpp
+index 8139fae4..380d6f99 100644
+--- a/src/uci.cpp
++++ b/src/uci.cpp
+@@ -41,6 +41,8 @@
+ #include "search.h"
+ #include "thread.h"
+ 
++std::string js_getline(); // ../../src/glue.cpp
++
+ namespace Stockfish {
+ 
+ namespace {
+@@ -269,10 +271,7 @@ void UCI::loop(int argc, char* argv[]) {
+ 
+     do
+     {
+-        if (argc == 1
+-            && !getline(std::cin, cmd))  // Wait for an input or an end-of-file (EOF) indication
+-            cmd = "quit";
+-
++        cmd = js_getline();
+         std::istringstream is(cmd);
+ 
+         token.clear();  // Avoid a stale if getline() returns nothing or a blank line
+@@ -336,7 +335,7 @@ void UCI::loop(int argc, char* argv[]) {
+             sync_cout << "Unknown command: '" << cmd << "'. Type help for more information."
+                       << sync_endl;
+ 
+-    } while (token != "quit" && argc == 1);  // The command-line arguments are one-shot
++    } while (token != "quit");
+ }
+ 
+ 
