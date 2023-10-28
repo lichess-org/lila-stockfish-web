@@ -77,6 +77,12 @@ def main():
     if "all" in arg_targets:
         arg_targets = list(targets.keys())
 
+    if len(arg_targets) > 0:
+        print(f"emsdk 3.1.x recommended (verified on 3.1.46 with node 16.20.0)")
+        print(f"building: {', '.join(arg_targets)}{' for node.js' if args.node else ''}")
+        print(f"flags: {args.flags}")
+        print("")
+    
     for target in arg_targets:
         build_target(target, args.flags, args.node)
 
