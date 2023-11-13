@@ -31,11 +31,11 @@ CXX_FLAGS = {flags} -Isrc -pthread -msse -msse2 -mssse3 -msse4.1 -msimd128 -flto
 	-DUSE_SSE2 -DUSE_SSSE3 -DUSE_SSE41 -DUSE_POPCNT -DNNUE_EMBEDDING_OFF -DNO_PREFETCH
 
 LD_FLAGS = {link_flags} \\
-	--pre-js=../../src/initModule.js -sEXPORT_ES6 -sEXPORT_NAME=StockfishWeb -sFILESYSTEM=0 \\
+	--pre-js=../../src/initModule.js -sEXPORT_ES6 -sEXPORT_NAME={mod_name(target)} -sFILESYSTEM=0 \\
 	-sEXPORTED_FUNCTIONS='[_malloc]' -sEXPORTED_RUNTIME_METHODS='[stringToUTF8,UTF8ToString]' \\
 	-sINCOMING_MODULE_JS_API='[locateFile,print,printErr,wasmMemory,buffer,instantiateWasm]' \\
 	-sINITIAL_MEMORY=64MB -sALLOW_MEMORY_GROWTH -sSTACK_SIZE=2MB -sSTRICT -sPROXY_TO_PTHREAD \\
-	-sALLOW_BLOCKING_ON_MAIN_THREAD=0 -Wno-pthreads-mem-growth
+	-sALLOW_BLOCKING_ON_MAIN_THREAD=0 -sEXIT_RUNTIME -Wno-pthreads-mem-growth
 
 SRCS = {sources}
 OBJS = $(addprefix src/, $(SRCS:.cpp=.o)) src/glue.o
@@ -54,6 +54,8 @@ src/glue.o: ../../src/glue.cpp
 
 # fmt: on
 
+def mod_name(target):
+    return f"{''.join(seg.capitalize() for seg in target.split('-'))}Web"
 
 def main():
     parser = argparse.ArgumentParser(description="build stockfish wasms")

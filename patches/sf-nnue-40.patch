@@ -32,15 +32,6 @@ index c40e0fa3..0d5c05cd 100644
    UCI::init(Options);
    Tune::init();
    PSQT::init();
-@@ -47,7 +46,6 @@ int main(int argc, char* argv[]) {
-   Eval::NNUE::init();
- 
-   UCI::loop(argc, argv);
--
--  Threads.set(0);
-+  std::cout << "we done" << std::endl;
-   return 0;
- }
 diff --git a/src/nnue/nnue_feature_transformer.h b/src/nnue/nnue_feature_transformer.h
 index 7571f398..1f5bc32b 100644
 --- a/src/nnue/nnue_feature_transformer.h
