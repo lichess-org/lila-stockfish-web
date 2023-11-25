@@ -1,17 +1,18 @@
 diff --git a/src/evaluate.cpp b/src/evaluate.cpp
-index 396d5ff6..2cfe432e 100644
+index 396d5ff6..0500aa58 100644
 --- a/src/evaluate.cpp
 +++ b/src/evaluate.cpp
-@@ -77,6 +77,8 @@ namespace Eval {
+@@ -77,6 +77,9 @@ namespace Eval {
    void NNUE::init() {
  
      useNNUE = Options["Use NNUE"];
++    currentNnueVariant = variants.find( string(Options["UCI_Variant"]))->second;
 +    return;
 +
      if (!useNNUE)
          return;
  
-@@ -140,6 +142,8 @@ namespace Eval {
+@@ -140,6 +143,8 @@ namespace Eval {
    /// NNUE::verify() verifies that the last net used was loaded successfully
    void NNUE::verify() {
  

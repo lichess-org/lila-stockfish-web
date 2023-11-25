@@ -13,7 +13,7 @@ targets = {
     "linrock-nnue-12": {"url": "https://github.com/linrock/Stockfish", "commit": "be1b8e0"},
     "sf-nnue-40": {"url": "https://github.com/official-stockfish/Stockfish", "commit": "68e1e9b"},
     "sf-nnue-60": {"url": "https://github.com/official-stockfish/Stockfish", "commit": "0024133"},
-    "fsf-hce": {"url": "https://github.com/fairy-stockfish/Fairy-Stockfish", "commit": "a621470"},
+    "fsf": {"url": "https://github.com/fairy-stockfish/Fairy-Stockfish", "commit": "a621470"},
 }
 
 ignore_sources = ["syzygy/tbprobe.cpp", "pyffish.cpp", "ffishjs.cpp"]

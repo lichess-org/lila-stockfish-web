@@ -1,6 +1,6 @@
 {
   "name": "lila-stockfish-web",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "T-bone Duplexus",
   "license": "AGPL-3.0-or-later",
   "type": "module",
@@ -18,9 +18,9 @@
     "sf-nnue-60.js",
     "sf-nnue-60.wasm",
     "sf-nnue-60.worker.js",
-    "fsf-hce.js",
-    "fsf-hce.wasm",
-    "fsf-hce.worker.js",
+    "fsf.js",
+    "fsf.wasm",
+    "fsf.worker.js",
     "stockfishWeb.d.ts"
   ]
 }
