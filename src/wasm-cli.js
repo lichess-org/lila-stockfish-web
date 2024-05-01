@@ -19,12 +19,12 @@ rl.on('line', line => {
   history.push(line);
   index = history.length;
   if (line.startsWith('setoption name EvalFile value ')) sf.setNnueBuffer(fs.readFileSync(line.slice(30)));
-  else if (line.startsWith('nnue ')) sf.setNnueBuffer(fs.readFileSync(5));
+  else if (line.startsWith('nnue ')) sf.setNnueBuffer(fs.readFileSync(line.slice(5)));
   else if (line === 'exit' || line === 'quit') process.exit();
   else sf.postMessage(line);
 });
 
-process.stdin.on('kepress', (_, key) => {
+process.stdin.on('keypress', (_, key) => {
   if (key.name === 'up') {
     if (index < 1) return;
     rl.write(null, { ctrl: true, name: 'u' });
