@@ -3,16 +3,14 @@ import argparse
 import subprocess
 import glob
 import os
+import re
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 fishes_dir = os.path.join(script_dir, "fishes")
 patches_dir = os.path.join(script_dir, "patches")
 
 targets = {
-    "linrock-nnue-7": {"url": "https://github.com/linrock/Stockfish", "commit": "c97f5cb"},
-    "linrock-nnue-12": {"url": "https://github.com/linrock/Stockfish", "commit": "be1b8e0"},
     "sf-nnue-40": {"url": "https://github.com/official-stockfish/Stockfish", "commit": "68e1e9b"},
-    "sf-nnue-60": {"url": "https://github.com/official-stockfish/Stockfish", "commit": "0024133"},
     "fsf": {"url": "https://github.com/fairy-stockfish/Fairy-Stockfish", "commit": "a621470"},
 }
 
@@ -32,7 +30,7 @@ CXX_FLAGS = {flags} -Isrc -pthread -msse -msse2 -mssse3 -msse4.1 -msimd128 -flto
 
 LD_FLAGS = {link_flags} \\
 	--pre-js=../../src/initModule.js -sEXPORT_ES6 -sEXPORT_NAME={mod_name(target)} -sFILESYSTEM=0 \\
-	-sEXPORTED_FUNCTIONS='[_malloc]' -sEXPORTED_RUNTIME_METHODS='[stringToUTF8,UTF8ToString]' \\
+	-sEXPORTED_FUNCTIONS='[_malloc,_main]' -sEXPORTED_RUNTIME_METHODS='[stringToUTF8,UTF8ToString,HEAPU8]' \\
 	-sINCOMING_MODULE_JS_API='[locateFile,print,printErr,wasmMemory,buffer,instantiateWasm]' \\
 	-sINITIAL_MEMORY=64MB -sALLOW_MEMORY_GROWTH -sSTACK_SIZE=2MB -sSTRICT -sPROXY_TO_PTHREAD \\
 	-sALLOW_BLOCKING_ON_MAIN_THREAD=0 -sEXIT_RUNTIME -Wno-pthreads-mem-growth
@@ -80,7 +78,6 @@ def main():
         arg_targets = list(targets.keys())
 
     if len(arg_targets) > 0:
-        print(f"emsdk 3.1.x recommended (verified on 3.1.46 with node 16.20.0)")
         print(f"building: {', '.join(arg_targets)}{' for node.js' if args.node else ''}")
         print(f"flags: {args.flags}")
         print("")
@@ -112,25 +109,14 @@ def build_target(target, flags, node):  # changes cwd
     for f in [f"{target}.js", f"{target}.wasm"]:
         os.replace(os.path.join(target_dir, f), os.path.join(script_dir, f))
 
-    srcWorkerJs = os.path.join(target_dir, f"{target}.worker.js")
-    destWorkerJs = os.path.join(script_dir, f"{target}.worker.js")
-    if not node:
-        os.replace(srcWorkerJs, destWorkerJs)
-    else:
-        with open(destWorkerJs, "w") as dest:
-            for f in ["../../src/createRequire.js", srcWorkerJs]:
-                with open(f) as src:
-                    dest.write(src.read())
-
 
 def fetch_sources(target):
     if target not in targets:
         raise Exception(f"unknown target {target}")
-    if not os.path.exists(fishes_dir):
-        os.makedirs(fishes_dir)
-    os.chdir(fishes_dir)
     target_dir = os.path.join(fishes_dir, target)
     if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+        os.chdir(fishes_dir)
         subprocess.run(["git", "clone", targets[target]["url"], target], check=True)
         subprocess.run(["git", "-C", target_dir, "checkout", targets[target]["commit"]], check=True)
         subprocess.run(
@@ -153,6 +139,27 @@ def clean():
 
     subprocess.run(["rm", "-rf"] + clean_list)
     return
+
+
+def assert_emsdk():
+    try:
+        result = subprocess.run(['emcc', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        if result.stderr:
+            print("Error:", result.stderr)
+            exit(1)
+        
+        version_match = re.search(f"(\d+)\.(\d+)\.(\d)", result)
+        if version_match:
+            major, minor, patch = version_match.groups()
+            if int(major) < 3 or (int(major) == 3 and int(minor) < 1) or (int(major) == 3 and int(minor) == 1 and int(patch) < 59):
+                print("emsdk 3.1.59 or later is required.")
+                exit(1)
+            else:
+                return
+    except FileNotFoundError:
+        print("emcc not installed or not found in the system path.")
+        exit(1)
 
 
 if __name__ == "__main__":
