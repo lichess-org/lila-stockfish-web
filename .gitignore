@@ -2,6 +2,8 @@
 **/*.nnue
 
 /fishes
+/*.js
+/*.wasm
 
 .vscode/
 .DS_Store

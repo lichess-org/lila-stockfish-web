@@ -10,8 +10,9 @@ fishes_dir = os.path.join(script_dir, "fishes")
 patches_dir = os.path.join(script_dir, "patches")
 
 targets = {
-    "sf-nnue-40": {"url": "https://github.com/official-stockfish/Stockfish", "commit": "68e1e9b"},
-    "fsf": {"url": "https://github.com/fairy-stockfish/Fairy-Stockfish", "commit": "a621470"},
+    "sf16-40": {"url": "https://github.com/official-stockfish/Stockfish", "commit": "68e1e9b"},
+    "sf16-linrock-7": {"url": "https://github.com/official-stockfish/Stockfish", "commit": "68e1e9b"},
+    "fsf14": {"url": "https://github.com/fairy-stockfish/Fairy-Stockfish", "commit": "a621470"},
 }
 
 ignore_sources = ["syzygy/tbprobe.cpp", "pyffish.cpp", "ffishjs.cpp"]
@@ -62,13 +63,13 @@ def main():
     parser.add_argument(
         "target",
         nargs="*",
-        help=f"{', '.join(list(targets.keys()))}, clean, or all (default: 'sf-nnue-60')",
+        help=f"{', '.join(list(targets.keys()))}, clean, or all (default: 'sf16-40')",
     )
 
     args = parser.parse_args()
     arg_targets = list(args.target)
     if len(arg_targets) == 0:
-        arg_targets = ["sf-nnue-60"]
+        arg_targets = ["sf16-40"]
 
     if "clean" in arg_targets:
         clean()
@@ -78,6 +79,7 @@ def main():
         arg_targets = list(targets.keys())
 
     if len(arg_targets) > 0:
+        assert_emsdk()
         print(f"building: {', '.join(arg_targets)}{' for node.js' if args.node else ''}")
         print(f"flags: {args.flags}")
         print("")
@@ -149,16 +151,19 @@ def assert_emsdk():
             print("Error:", result.stderr)
             exit(1)
         
-        version_match = re.search(f"(\d+)\.(\d+)\.(\d)", result)
+        version_match = re.search(r"([\d]+)\.([\d]+)\.([\d]+)", result.stdout)
         if version_match:
             major, minor, patch = version_match.groups()
             if int(major) < 3 or (int(major) == 3 and int(minor) < 1) or (int(major) == 3 and int(minor) == 1 and int(patch) < 59):
-                print("emsdk 3.1.59 or later is required.")
+                print("emsdk 3.1.59 or later is required")
                 exit(1)
             else:
                 return
+        else:
+            print("could not determine emcc version")
+            exit(1)
     except FileNotFoundError:
-        print("emcc not installed or not found in the system path.")
+        print("emcc not installed or not found in the system path")
         exit(1)
 
 
