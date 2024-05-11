@@ -6,12 +6,12 @@
   "type": "module",
   "types": "stockfishWeb.d.ts",
   "files": [
-    "sf16-linrock-7.js",
-    "sf16-linrock-7.wasm",
+    "sf16-7.js",
+    "sf16-7.wasm",
     "sf16-40.js",
     "sf16-40.wasm",
-    "sf16-70.js",
-    "sf16-70.wasm",
+    "sf161-70.js",
+    "sf161-70.wasm",
     "fsf14.js",
     "fsf14.wasm",
     "stockfishWeb.d.ts"

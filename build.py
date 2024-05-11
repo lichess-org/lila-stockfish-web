@@ -13,9 +13,9 @@ default_glue = {"cpp":"glue.cpp", "js":"initModule.js"}
 
 targets = {
     "fsf14": {"url": "https://github.com/fairy-stockfish/Fairy-Stockfish", "commit": "a621470", "glue": default_glue},
-    "sf16-linrock-7": {"url": default_repo, "commit": "68e1e9b", "glue": default_glue},
+    "sf16-7": {"url": default_repo, "commit": "68e1e9b", "glue": default_glue},
     "sf16-40": {"url": default_repo, "commit": "68e1e9b", "glue": default_glue},
-    "sf16-70": {"url": default_repo, "commit": "e67cc97", "glue": {"cpp":"dualnet-glue.cpp", "js":"dualnet-initModule.js"}}, # 16.1
+    "sf161-70": {"url": default_repo, "commit": "e67cc97", "glue": {"cpp":"dualnet-glue.cpp", "js":"dualnet-initModule.js"}}, # 16.1
 }
 
 ignore_sources = ["syzygy/tbprobe.cpp", "pyffish.cpp", "ffishjs.cpp"]
