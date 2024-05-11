@@ -89,9 +89,11 @@ def main():
         print(f"building: {', '.join(arg_targets)}{' for node.js' if args.node else ''}")
         print(f"flags: {args.flags}")
         print("")
-    
-    for target in arg_targets:
-        build_target(target, args.flags, args.node)
+    try:
+        for target in arg_targets:
+            build_target(target, args.flags, args.node)
+    except Exception as e:
+        print(e)
 
 
 def build_target(target, flags, node):  # changes cwd
@@ -120,7 +122,7 @@ def build_target(target, flags, node):  # changes cwd
 
 def fetch_sources(target):
     if target not in targets:
-        raise Exception(f"unknown target {target}")
+        raise Exception(f"unknown target: {target}")
     target_dir = os.path.join(fishes_dir, target)
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)

@@ -1,15 +1,14 @@
 declare module 'lila-stockfish-web' {
   interface StockfishWeb {
-    postMessage(uci: string): void;
+    uci(command: string): void; // send uci command, receive async response via listen
 
     listen: (data: string) => void; // attach listener here
-    
-    setNnueBuffer(data: Uint8Array, index?: number): void;
-    // index argument is used to select between big and small nnue if the target is a dual nnue build
-    // 0 for big, 1 for small. single nnue wasms should ignore this parameter
 
-    getRecommendedNnue(index?: number): string; // returns a bare filename, 0 for big, 1 for small
-    // index argument is 0 for big, 1 for small. single nnue wasms should ignore this parameter
+    // index arguments are used for dual net sf builds, 0 for big, 1 for small, otherwise ignore
+
+    setNnueBuffer(data: Uint8Array, index?: number): void; // load nnue as buffer
+
+    getRecommendedNnue(index?: number): string; // returns a bare filename
 
     onError: (msg: string) => void; // attach error handler here
   }

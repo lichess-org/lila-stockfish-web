@@ -32,22 +32,6 @@ index c40e0fa3..0d5c05cd 100644
    UCI::init(Options);
    Tune::init();
    PSQT::init();
-diff --git a/src/nnue/nnue_feature_transformer.h b/src/nnue/nnue_feature_transformer.h
-index 7571f398..1f5bc32b 100644
---- a/src/nnue/nnue_feature_transformer.h
-+++ b/src/nnue/nnue_feature_transformer.h
-@@ -33,10 +33,7 @@ namespace Stockfish::Eval::NNUE {
-   using WeightType     = std::int16_t;
-   using PSQTWeightType = std::int32_t;
- 
--  // If vector instructions are enabled, we update and refresh the
--  // accumulator tile by tile such that each tile fits in the CPU's
--  // vector registers.
--  #define VECTOR
-+  // For WASM, let clang auto-vectorize
- 
-   static_assert(PSQTBuckets % 8 == 0,
-     "Per feature PSQT values cannot be processed at granularity lower than 8 at a time.");
 diff --git a/src/search.cpp b/src/search.cpp
 index 740ad71e..2d4a1291 100644
 --- a/src/search.cpp

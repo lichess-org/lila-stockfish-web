@@ -10,7 +10,7 @@ Module['printErr'] = data => Module['onError']?.(data);
 
 Module['getRecommendedNnue'] = () => UTF8ToString(_getRecommendedNnue());
 
-Module['postMessage'] = function (uci) {
+Module['uci'] = function (uci) {
   const sz = lengthBytesUTF8(uci) + 1;
   const utf8 = _malloc(sz); // deallocated in src/wasm/glue.cpp
   if (!utf8) throw new Error(`Could not allocate ${sz} bytes`);

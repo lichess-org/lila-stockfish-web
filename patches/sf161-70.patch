@@ -35,19 +35,6 @@ index 1d089971..c06b2572 100644
      std::string pathSeparator;
  
      // Extract the path+name of the executable binary
-diff --git a/src/nnue/nnue_feature_transformer.h b/src/nnue/nnue_feature_transformer.h
-index 3399b82d..41b6e274 100644
---- a/src/nnue/nnue_feature_transformer.h
-+++ b/src/nnue/nnue_feature_transformer.h
-@@ -43,7 +43,7 @@ using PSQTWeightType = std::int32_t;
- // If vector instructions are enabled, we update and refresh the
- // accumulator tile by tile such that each tile fits in the CPU's
- // vector registers.
--#define VECTOR
-+//#define VECTOR
- 
- static_assert(PSQTBuckets % 8 == 0,
-               "Per feature PSQT values cannot be processed at granularity lower than 8 at a time.");
 diff --git a/src/tt.cpp b/src/tt.cpp
 index f3f58979..7e6c307f 100644
 --- a/src/tt.cpp
