@@ -1,7 +1,7 @@
 import * as readline from 'node:readline';
 import * as fs from 'node:fs';
 
-const createStockfish = await import(`../${process.argv[2] ?? 'sf-nnue-70.js'}`);
+const createStockfish = await import(`../${process.argv[2] ?? 'sf16-70.js'}`);
 let history = [],
   index = 0;
 
@@ -18,7 +18,9 @@ rl.on('SIGINT', process.exit);
 rl.on('line', line => {
   history.push(line);
   index = history.length;
-  if (line.startsWith('load ')) sf.setNnueBuffer(fs.readFileSync(line.slice(5)));
+  if (line.startsWith('load ')) sf.setNnueBuffer(fs.readFileSync(line.slice(5)), 0);
+  else if (line.startsWith('big ')) sf.setNnueBuffer(fs.readFileSync(line.slice(4)), 0);
+  else if (line.startsWith('small ')) sf.setNnueBuffer(fs.readFileSync(line.slice(6)), 1);
   else if (line === 'exit' || line === 'quit') process.exit();
   else sf.postMessage(line);
 });
