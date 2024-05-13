@@ -1,6 +1,6 @@
 {
   "name": "lila-stockfish-web",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "T-bone Duplexus",
   "license": "AGPL-3.0-or-later",
   "type": "module",

@@ -9,22 +9,18 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 fishes_dir = os.path.join(script_dir, "fishes")
 patches_dir = os.path.join(script_dir, "patches")
 default_repo = "https://github.com/official-stockfish/Stockfish"
-default_glue = {"cpp":"glue.cpp", "js":"initModule.js"}
 
 targets = {
-    "fsf14": {"url": "https://github.com/fairy-stockfish/Fairy-Stockfish", "commit": "a621470", "glue": default_glue},
-    "sf16-7": {"url": default_repo, "commit": "68e1e9b", "glue": default_glue},
-    "sf16-40": {"url": default_repo, "commit": "68e1e9b", "glue": default_glue},
-    "sf161-70": {"url": default_repo, "commit": "e67cc97", "glue": {"cpp":"dualnet-glue.cpp", "js":"dualnet-initModule.js"}}, # 16.1
+    "fsf14": {"url": "https://github.com/fairy-stockfish/Fairy-Stockfish", "commit": "a621470"},
+    "sf16-7": {"url": default_repo, "commit": "68e1e9b"},
+    "sf16-40": {"url": default_repo, "commit": "68e1e9b"},
+    "sf161-70": {"url": default_repo, "commit": "e67cc97"}, # 16.1
 }
 
 ignore_sources = ["syzygy/tbprobe.cpp", "pyffish.cpp", "ffishjs.cpp"]
 
 
 def makefile(target, sources, flags, link_flags):
-    js_glue = targets[target]["glue"]["js"]
-    cpp_glue = targets[target]["glue"]["cpp"]
-
     # DO NOT replace tabs with spaces
     # fmt: off
     return f"""
@@ -36,7 +32,7 @@ CXX_FLAGS = {flags} -Isrc -pthread -msse -msse2 -mssse3 -msse4.1 -msimd128 -flto
 	-DUSE_SSE2 -DUSE_SSSE3 -DUSE_SSE41 -DUSE_POPCNT -DNNUE_EMBEDDING_OFF -DNO_PREFETCH
 
 LD_FLAGS = {link_flags} \\
-	--pre-js=../../src/{js_glue} -sEXPORT_ES6 -sEXPORT_NAME={mod_name(target)} -sFILESYSTEM=0 \\
+	--pre-js=../../src/initModule.js -sEXPORT_ES6 -sEXPORT_NAME={mod_name(target)} -sFILESYSTEM=0 \\
 	-sEXPORTED_FUNCTIONS='[_malloc,_main]' -sEXPORTED_RUNTIME_METHODS='[stringToUTF8,UTF8ToString,HEAPU8]' \\
 	-sINCOMING_MODULE_JS_API='[locateFile,print,printErr,wasmMemory,buffer,instantiateWasm]' \\
 	-sINITIAL_MEMORY=64MB -sALLOW_MEMORY_GROWTH -sSTACK_SIZE=2MB -sSTRICT -sPROXY_TO_PTHREAD \\
@@ -51,7 +47,7 @@ $(EXE).js: $(OBJS)
 %.o: %.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
-src/glue.o: ../../src/{cpp_glue}
+src/glue.o: ../../src/glue.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 """

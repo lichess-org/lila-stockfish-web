@@ -4,23 +4,36 @@
 #include "evaluate.h"
 #include "syzygy/tbprobe.h"
 #include "nnue/evaluate_nnue.h"
+#include "nnue/nnue_architecture.h"
 #include "uci.h"
+
+#ifdef EvalFileDefaultNameSmall
+# define LSFW_DUAL_NET 1
+#endif
+
+#ifdef LSFW_DUAL_NET
+# define GET_USE_NNUE(x) ""
+#else
+# define GET_USE_NNUE(x) Stockfish::Options.count("Use NNUE") > 0 ? "setoption name Use NNUE value " + std::string(x ? "true" : "false") : ""
+# define EvalFileDefaultNameBig EvalFileDefaultName
+# define EvalFileDefaultNameSmall EvalFileDefaultName
+#endif
 
 struct Command : public std::streambuf {
   enum { UCI, NNUE } type;
+  std::string uci;
+  std::shared_ptr<void> ptr = nullptr;
+  int index;
 
   Command(const char *text) : type(UCI), uci(text) {
     std::free((void*)text);
   }
-  Command(char *buf, size_t sz) : type(NNUE), ptr((void*)buf, std::free) {
+  Command(char *buf, size_t sz, int index) : type(NNUE), ptr((void*)buf, std::free), index(index) {
     setg(buf, buf, buf + sz);
   }
 
-  std::string uci;
-  std::shared_ptr<void> ptr = nullptr;
   using std::streambuf::seekoff;
   using std::streambuf::seekpos;
-
 };
 
 struct {
@@ -48,29 +61,31 @@ EMSCRIPTEN_KEEPALIVE std::string js_getline() {
   auto cmd = inQ.pop();
   if (cmd.type == cmd.UCI) return cmd.uci;
   else if (cmd.type == cmd.NNUE) {
-    if (!cmd.ptr)
-      return Stockfish::Options.count("Use NNUE") > 0 ? "setoption name Use NNUE value false" : "";
-    
+    if (!cmd.ptr) return GET_USE_NNUE(false);
     std::istream in(&cmd);
-    bool success = Stockfish::Eval::NNUE::load_eval(EvalFileDefaultName, in);
-    if (!success) std::cerr << "BAD_NNUE" << std::endl;
-    if (Stockfish::Options.count("Use NNUE") > 0)
-      return "setoption name Use NNUE value " + std::string(success ? "true" : "false");
+    auto success = 
+#ifdef LSFW_DUAL_NET
+      Stockfish::Eval::NNUE::load_eval(in, Stockfish::Eval::NNUE::NetSize(cmd.index));
+#else
+      Stockfish::Eval::NNUE::load_eval("", in) ? std::make_optional(0) : std::nullopt;
+#endif
+    if (!success.has_value()) std::cerr << "BAD_NNUE " << cmd.index << std::endl;
+    return GET_USE_NNUE(success.has_value());
   }
   return "";
 }
 
 extern "C" {
-  EMSCRIPTEN_KEEPALIVE const char * getRecommendedNnue() {
-    return EvalFileDefaultName;
-  }
-
   EMSCRIPTEN_KEEPALIVE void uci(const char *utf8) {
     inQ.push(Command(utf8));
   }
 
-  EMSCRIPTEN_KEEPALIVE void setNnueBuffer(char *buf, size_t sz) {
-    inQ.push(Command(buf, sz));
+  EMSCRIPTEN_KEEPALIVE void setNnueBuffer(char *buf, size_t sz, int index) {
+    inQ.push(Command(buf, sz, index));
+  }
+
+  EMSCRIPTEN_KEEPALIVE const char * getRecommendedNnue(int index) {
+    return index == 1 ? EvalFileDefaultNameSmall : EvalFileDefaultNameBig;
   }
 }
 
@@ -78,10 +93,17 @@ extern "C" {
 namespace Stockfish::Tablebases {
 
   int MaxCardinality = 0;
-
-  void init(const std::string& paths) {}
+  void     init(const std::string& paths) {}
   WDLScore probe_wdl(Position& pos, ProbeState* result) { return WDLDraw; }
-  int probe_dtz(Position& pos, ProbeState* result) { return 0; }
+  int      probe_dtz(Position& pos, ProbeState* result) { return 0; }
+#ifdef LSFW_DUAL_NET
+  bool     root_probe(Position& pos, Search::RootMoves& rootMoves, bool rule50) { return false; }
+  bool     root_probe_wdl(Position& pos, Search::RootMoves& rootMoves, bool rule50) { return false; }
+  Config   rank_root_moves(const OptionsMap& options, Position& pos, Search::RootMoves& rootMoves) {
+    return Config();
+  }
+#else
   bool root_probe(Position& pos, Search::RootMoves& rootMoves) { return false; }
   bool root_probe_wdl(Position& pos, Search::RootMoves& rootMoves) { return false; }
+#endif
 }
