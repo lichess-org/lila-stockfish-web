@@ -6,6 +6,8 @@
   "type": "module",
   "types": "stockfishWeb.d.ts",
   "files": [
+    "sfhce.js",
+    "sfhce.wasm",
     "sf16-7.js",
     "sf16-7.wasm",
     "sf16-40.js",

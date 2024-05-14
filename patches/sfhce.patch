@@ -1,0 +1,81 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index fafefee2..9e3010cd 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
+   Threads.set(size_t(Options["Threads"]));
+   Search::clear(); // After threads are up
+ 
+-  UCI::loop(argc, argv);
++  UCI::loop(0, nullptr);
+ 
+   Threads.set(0);
+   return 0;
+diff --git a/src/search.cpp b/src/search.cpp
+index 91ac60ad..0607a175 100644
+--- a/src/search.cpp
++++ b/src/search.cpp
+@@ -1829,7 +1829,7 @@ void MainThread::check_time() {
+ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
+ 
+   std::stringstream ss;
+-  TimePoint elapsed = Time.elapsed() + 1;
++  TimePoint elapsed = std::max(Time.elapsed() + 1, TimePoint(1));
+   const RootMoves& rootMoves = pos.this_thread()->rootMoves;
+   size_t pvIdx = pos.this_thread()->pvIdx;
+   size_t multiPV = std::min((size_t)Options["MultiPV"], rootMoves.size());
+@@ -1914,6 +1914,9 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
+ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
+ 
+     RootInTB = false;
++    Cardinality = 0;
++    return;
++    
+     UseRule50 = bool(Options["Syzygy50MoveRule"]);
+     ProbeDepth = int(Options["SyzygyProbeDepth"]);
+     Cardinality = int(Options["SyzygyProbeLimit"]);
+diff --git a/src/tt.cpp b/src/tt.cpp
+index 34590903..e0caed9b 100644
+--- a/src/tt.cpp
++++ b/src/tt.cpp
+@@ -82,6 +82,9 @@ void TranspositionTable::resize(size_t mbSize) {
+ //  in a multi-threaded way.
+ 
+ void TranspositionTable::clear() {
++  std::memset(table, 0, clusterCount * sizeof(Cluster));
++  // no new threads for wasm, otherwise terrible things.
++  return;
+ 
+   std::vector<std::thread> threads;
+ 
+diff --git a/src/uci.cpp b/src/uci.cpp
+index bb57c80b..fbd0b71d 100644
+--- a/src/uci.cpp
++++ b/src/uci.cpp
+@@ -36,6 +36,8 @@
+ 
+ using namespace std;
+ 
++std::string js_getline(); // wasm/glue.cpp
++
+ extern vector<string> setup_bench(const Position&, istream&);
+ 
+ namespace {
+@@ -228,7 +230,7 @@ void UCI::loop(int argc, char* argv[]) {
+   do {
+       if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
+           cmd = "quit";
+-
++      cmd = js_getline();
+       istringstream is(cmd);
+ 
+       token.clear(); // Avoid a stale if getline() returns empty or blank line
+@@ -266,7 +268,7 @@ void UCI::loop(int argc, char* argv[]) {
+       else
+           sync_cout << "Unknown command: " << cmd << sync_endl;
+ 
+-  } while (token != "quit" && argc == 1); // Command line args are one-shot
++  } while (token != "quit");
+ }
+ 
+ 

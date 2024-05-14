@@ -32,7 +32,10 @@ Edit the Stockfish sources freely. But to contribute your edits, use a patch fil
 
 ## Sources
 
-This maps targets to their ancestor repo/commit:
+### sfhce (Official Stockfish Classical release)
+- repo: https://github.com/official-stockfish/Stockfish
+- commit: [9587eee](https://github.com/official-stockfish/Stockfish/commit/9587eee)
+- tag: SF_classical
 
 ### sf16-40 (Official Stockfish 16 release)
 - repo: https://github.com/official-stockfish/Stockfish

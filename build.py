@@ -5,22 +5,26 @@ import glob
 import os
 import re
 
+stockfish_repo = "https://github.com/official-stockfish/Stockfish"
+fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
+
+targets = {
+    "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": "-DLSFW_NNUE_COUNT=1"},
+    "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "-DLSFW_NNUE_COUNT=1"},
+    "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "-DLSFW_NNUE_COUNT=1"},
+    "sf161-70": {"url": stockfish_repo, "commit": "e67cc97", "cxx_flags": "-DLSFW_NNUE_COUNT=2"}, # 16.1
+    "sfhce": {"url": stockfish_repo, "commit": "9587eee"}, # sf classical
+}
+
 script_dir = os.path.dirname(os.path.realpath(__file__))
 fishes_dir = os.path.join(script_dir, "fishes")
 patches_dir = os.path.join(script_dir, "patches")
-default_repo = "https://github.com/official-stockfish/Stockfish"
-
-targets = {
-    "fsf14": {"url": "https://github.com/fairy-stockfish/Fairy-Stockfish", "commit": "a621470"},
-    "sf16-7": {"url": default_repo, "commit": "68e1e9b"},
-    "sf16-40": {"url": default_repo, "commit": "68e1e9b"},
-    "sf161-70": {"url": default_repo, "commit": "e67cc97"}, # 16.1
-}
 
 ignore_sources = ["syzygy/tbprobe.cpp", "pyffish.cpp", "ffishjs.cpp"]
 
 
 def makefile(target, sources, flags, link_flags):
+    flags = " ".join([flags.strip(), targets[target].get("cxx_flags", "").strip()])
     # DO NOT replace tabs with spaces
     # fmt: off
     return f"""
@@ -29,7 +33,7 @@ CXX = em++
 EXE = {target}
 
 CXX_FLAGS = {flags} -Isrc -pthread -msse -msse2 -mssse3 -msse4.1 -msimd128 -flto -fno-exceptions \\
-	-DUSE_SSE2 -DUSE_SSSE3 -DUSE_SSE41 -DUSE_POPCNT -DNNUE_EMBEDDING_OFF -DNO_PREFETCH
+	-DUSE_POPCNT -DUSE_SSE2 -DUSE_SSSE3 -DUSE_SSE41 -DNO_PREFETCH -DNNUE_EMBEDDING_OFF
 
 LD_FLAGS = {link_flags} \\
 	--pre-js=../../src/initModule.js -sEXPORT_ES6 -sEXPORT_NAME={mod_name(target)} -sFILESYSTEM=0 \\

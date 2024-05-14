@@ -3,20 +3,22 @@
 #include <queue>
 #include "evaluate.h"
 #include "syzygy/tbprobe.h"
-#include "nnue/evaluate_nnue.h"
-#include "nnue/nnue_architecture.h"
 #include "uci.h"
-
-#ifdef EvalFileDefaultNameSmall
-# define LSFW_DUAL_NET 1
+#if LSFW_NNUE_COUNT > 0
+# include "nnue/evaluate_nnue.h"
+# include "nnue/nnue_architecture.h"
 #endif
 
-#ifdef LSFW_DUAL_NET
+#if LSFW_NNUE_COUNT == 2
 # define GET_USE_NNUE(x) ""
-#else
+#elif LSFW_NNUE_COUNT == 1
 # define GET_USE_NNUE(x) Stockfish::Options.count("Use NNUE") > 0 ? "setoption name Use NNUE value " + std::string(x ? "true" : "false") : ""
 # define EvalFileDefaultNameBig EvalFileDefaultName
 # define EvalFileDefaultNameSmall EvalFileDefaultName
+#else
+# define GET_USE_NNUE(x) ""
+# define EvalFileDefaultNameBig ""
+# define EvalFileDefaultNameSmall ""
 #endif
 
 struct Command : public std::streambuf {
@@ -60,18 +62,20 @@ struct {
 EMSCRIPTEN_KEEPALIVE std::string js_getline() {
   auto cmd = inQ.pop();
   if (cmd.type == cmd.UCI) return cmd.uci;
+#if LSFW_NNUE_COUNT > 0
   else if (cmd.type == cmd.NNUE) {
     if (!cmd.ptr) return GET_USE_NNUE(false);
     std::istream in(&cmd);
     auto success = 
-#ifdef LSFW_DUAL_NET
+# if LSFW_NNUE_COUNT == 2
       Stockfish::Eval::NNUE::load_eval(in, Stockfish::Eval::NNUE::NetSize(cmd.index));
-#else
+# else
       Stockfish::Eval::NNUE::load_eval("", in) ? std::make_optional(0) : std::nullopt;
-#endif
+# endif
     if (!success.has_value()) std::cerr << "BAD_NNUE " << cmd.index << std::endl;
     return GET_USE_NNUE(success.has_value());
   }
+#endif
   return "";
 }
 
@@ -90,13 +94,16 @@ extern "C" {
 }
 
 // stubs for tbprobe.cpp (so we don't need -sALLOW_UNIMPLEMENTED_SYSCALLS)
-namespace Stockfish::Tablebases {
-
+#if LSFW_NNUE_COUNT > 0
+  namespace Stockfish::Tablebases {
+#else
+  namespace Tablebases {
+#endif
   int MaxCardinality = 0;
   void     init(const std::string& paths) {}
   WDLScore probe_wdl(Position& pos, ProbeState* result) { return WDLDraw; }
   int      probe_dtz(Position& pos, ProbeState* result) { return 0; }
-#ifdef LSFW_DUAL_NET
+#if LSFW_NNUE_COUNT == 2
   bool     root_probe(Position& pos, Search::RootMoves& rootMoves, bool rule50) { return false; }
   bool     root_probe_wdl(Position& pos, Search::RootMoves& rootMoves, bool rule50) { return false; }
   Config   rank_root_moves(const OptionsMap& options, Position& pos, Search::RootMoves& rootMoves) {
