@@ -12,12 +12,14 @@ fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
 # - sfhce: VERSION_0
 # - fsf14, sf16-7, sf16-40: VERSION_1
 # - sf16.1: VERSION_2
+# - sf17: VERSION_3
 
 targets = {
     "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": "", "version": "version_1"},
     "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "", "version": "version_1"},
     "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "", "version": "version_1"},
     "sf161-70": {"url": stockfish_repo, "commit": "e67cc97", "cxx_flags": "", "version": "version_2"}, # 16.1
+    "sf17-80": {"url": stockfish_repo, "commit": "ae9e55c", "cxx_flags": "", "version": "version_3"}, # 17
     "sfhce": {"url": stockfish_repo, "commit": "9587eee", "version": "version_0"}, # sf classical
 }
 
