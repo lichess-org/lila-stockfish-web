@@ -1,6 +1,5 @@
 #include "glue.hpp"
 
-
 #include "evaluate.h"
 #include "syzygy/tbprobe.h"
 #include "uci.h"
