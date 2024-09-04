@@ -8,12 +8,17 @@ import re
 stockfish_repo = "https://github.com/official-stockfish/Stockfish"
 fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
 
+# compatiblity modes:
+# - sfhce: VERSION_0
+# - fsf14, sf16-7, sf16-40: VERSION_1
+# - sf16.1: VERSION_2
+
 targets = {
-    "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": "-DLSFW_NNUE_COUNT=1"},
-    "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "-DLSFW_NNUE_COUNT=1"},
-    "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "-DLSFW_NNUE_COUNT=1"},
-    "sf161-70": {"url": stockfish_repo, "commit": "e67cc97", "cxx_flags": "-DLSFW_NNUE_COUNT=2"}, # 16.1
-    "sfhce": {"url": stockfish_repo, "commit": "9587eee"}, # sf classical
+    "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": "", "version": "version_1"},
+    "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "", "version": "version_1"},
+    "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "", "version": "version_1"},
+    "sf161-70": {"url": stockfish_repo, "commit": "e67cc97", "cxx_flags": "", "version": "version_2"}, # 16.1
+    "sfhce": {"url": stockfish_repo, "commit": "9587eee", "version": "version_0"}, # sf classical
 }
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -25,6 +30,8 @@ ignore_sources = ["syzygy/tbprobe.cpp", "pyffish.cpp", "ffishjs.cpp"]
 
 def makefile(target, sources, flags, link_flags):
     flags = " ".join([flags.strip(), targets[target].get("cxx_flags", "").strip()])
+    version = targets[target].get("version")
+    glue_filename = f"glue_{version}"
     # DO NOT replace tabs with spaces
     # fmt: off
     return f"""
@@ -43,7 +50,7 @@ LD_FLAGS = {link_flags} \\
 	-sALLOW_BLOCKING_ON_MAIN_THREAD=0 -sEXIT_RUNTIME -Wno-pthreads-mem-growth
 
 SRCS = {sources}
-OBJS = $(addprefix src/, $(SRCS:.cpp=.o)) src/glue.o
+OBJS = $(addprefix src/, $(SRCS:.cpp=.o)) src/{glue_filename}.o
 
 $(EXE).js: $(OBJS)
 	$(CXX) $(CXX_FLAGS) $(LD_FLAGS) $(OBJS) -o $(EXE).js
@@ -51,7 +58,7 @@ $(EXE).js: $(OBJS)
 %.o: %.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
-src/glue.o: ../../src/glue.cpp
+src/{glue_filename}.o: ../../src/{glue_filename}.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 """
