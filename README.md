@@ -55,6 +55,13 @@ Edit the Stockfish sources freely. But to contribute your edits, use a patch fil
 - big nnue: [nn-b1a57edbea57.nnue](https://tests.stockfishchess.org/nns?network_name=nn-b1a57edbea57)
 - small nnue: [nn-baff1ede1f90.nnue](https://tests.stockfishchess.org/nns?network_name=nn-baff1ede1f90)
 
+### sf17-80 (Official Stockfish 17 release)
+- repo: https://github.com/official-stockfish/Stockfish
+- commit: [e0bfc4b](https://github.com/official-stockfish/Stockfish/commit/e0bfc4b)
+- tag: sf_17
+- big nnue: [nn-1111cefa1111.nnue](https://tests.stockfishchess.org/api/nn/nn-1111cefa1111.nnue)
+- small nnue: [nn-37f18f62d772.nnue](//tests.stockfishchess.org/api/nn/nn-37f18f62d772.nnue)
+
 ### fsf14 (Fairy-Stockfish 14)
 - repo: https://github.com/fairy-stockfish/Fairy-Stockfish
 - commit: [a621470](https://github.com/fairy-stockfish/Fairy-Stockfish/commit/a621470)
