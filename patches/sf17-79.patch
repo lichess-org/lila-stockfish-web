@@ -107,6 +107,19 @@ index 15208255..7f9f7dfa 100644
      bool read_header(std::istream&, std::uint32_t*, std::string*) const;
      bool write_header(std::ostream&, std::uint32_t, const std::string&) const;
  
+diff --git a/src/timeman.h b/src/timeman.h
+index 10207a8a..403006a5 100644
+--- a/src/timeman.h
++++ b/src/timeman.h
+@@ -48,7 +48,7 @@ class TimeManagement {
+     TimePoint elapsed(FUNC nodes) const {
+         return useNodesTime ? TimePoint(nodes()) : elapsed_time();
+     }
+-    TimePoint elapsed_time() const { return now() - startTime; };
++    TimePoint elapsed_time() const { return std::max(now() - startTime, TimePoint(1)); };
+ 
+     void clear();
+     void advance_nodes_time(std::int64_t nodes);
 diff --git a/src/uci.cpp b/src/uci.cpp
 index c94f8b91..58b1d22c 100644
 --- a/src/uci.cpp
