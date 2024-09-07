@@ -22,7 +22,7 @@ index f3c78398..70166347 100644
  
      void trace_eval() const;
 diff --git a/src/main.cpp b/src/main.cpp
-index a6a3d1c4..3af2a48c 100644
+index a6a3d1c4..18bb375b 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
 @@ -21,12 +21,14 @@
@@ -36,25 +36,59 @@ index a6a3d1c4..3af2a48c 100644
  
  using namespace Stockfish;
  
-+UCIEngine uci_global(0, nullptr);
++UCIEngine* uci_global;
 +
  int main(int argc, char* argv[]) {
  
      std::cout << engine_info() << std::endl;
-@@ -34,11 +36,9 @@ int main(int argc, char* argv[]) {
+@@ -34,11 +36,10 @@ int main(int argc, char* argv[]) {
      Bitboards::init();
      Position::init();
  
 -    UCIEngine uci(argc, argv);
--
--    Tune::init(uci.engine_options());
-+    Tune::init(uci_global.engine_options());
++    uci_global = new UCIEngine(0, nullptr);
++    Tune::init(uci_global->engine_options());
  
+-    Tune::init(uci.engine_options());
+-
 -    uci.loop();
-+    uci_global.loop();
++    uci_global->loop();
  
      return 0;
  }
+diff --git a/src/misc.cpp b/src/misc.cpp
+index 91cdbc4d..84363373 100644
+--- a/src/misc.cpp
++++ b/src/misc.cpp
+@@ -456,6 +456,7 @@ bool is_whitespace(const std::string& s) {
+ }
+ 
+ std::string CommandLine::get_binary_directory(std::string argv0) {
++    return "";
+     std::string pathSeparator;
+ 
+ #ifdef _WIN32
+@@ -490,6 +491,7 @@ std::string CommandLine::get_binary_directory(std::string argv0) {
+ }
+ 
+ std::string CommandLine::get_working_directory() {
++    return "";
+     std::string workingDirectory = "";
+     char        buff[40000];
+     char*       cwd = GETCWD(buff, 40000);
+diff --git a/src/nnue/network.cpp b/src/nnue/network.cpp
+index f7d2cc6a..c9c07830 100644
+--- a/src/nnue/network.cpp
++++ b/src/nnue/network.cpp
+@@ -235,6 +235,8 @@ Network<Arch, Transformer>::evaluate(const Position&                         pos
+ 
+ template<typename Arch, typename Transformer>
+ void Network<Arch, Transformer>::verify(std::string evalfilePath) const {
++    return; // Yep
++
+     if (evalfilePath.empty())
+         evalfilePath = evalFile.defaultName;
+ 
 diff --git a/src/nnue/network.h b/src/nnue/network.h
 index 15208255..7f9f7dfa 100644
 --- a/src/nnue/network.h
@@ -74,7 +108,7 @@ index 15208255..7f9f7dfa 100644
      bool write_header(std::ostream&, std::uint32_t, const std::string&) const;
  
 diff --git a/src/uci.cpp b/src/uci.cpp
-index 9b60680d..76afd27c 100644
+index c94f8b91..58b1d22c 100644
 --- a/src/uci.cpp
 +++ b/src/uci.cpp
 @@ -37,6 +37,8 @@
@@ -86,11 +120,13 @@ index 9b60680d..76afd27c 100644
  namespace Stockfish {
  
  constexpr auto StartFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-@@ -62,7 +64,7 @@ void UCIEngine::print_info_string(const std::string& str) {
+@@ -61,8 +63,8 @@ void UCIEngine::print_info_string(const std::string& str) {
+ }
  
  UCIEngine::UCIEngine(int argc, char** argv) :
-     engine(argv[0]),
+-    engine(argv[0]),
 -    cli(argc, argv) {
++    engine(),
 +    cli(0, nullptr) {
  
      engine.get_options().add_info_listener([](const std::optional<std::string>& str) {
@@ -114,10 +150,18 @@ index 9b60680d..76afd27c 100644
  
  Search::LimitsType UCIEngine::parse_limits(std::istream& is) {
 diff --git a/src/uci.h b/src/uci.h
-index 23745f96..88cf29dc 100644
+index 23745f96..eb82c4ae 100644
 --- a/src/uci.h
 +++ b/src/uci.h
-@@ -54,8 +54,9 @@ class UCIEngine {
+@@ -39,6 +39,7 @@ using Value = int;
+ class UCIEngine {
+    public:
+     UCIEngine(int argc, char** argv);
++    UCIEngine() = delete;
+ 
+     void loop();
+ 
+@@ -54,8 +55,9 @@ class UCIEngine {
  
      auto& engine_options() { return engine.get_options(); }
  

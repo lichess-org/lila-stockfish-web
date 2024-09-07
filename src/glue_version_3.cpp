@@ -6,7 +6,7 @@
 
 # include "nnue/nnue_architecture.h"
 
-extern Stockfish::UCIEngine uci_global;
+extern Stockfish::UCIEngine* uci_global;
 
 # define GET_USE_NNUE(x) ""
 
@@ -18,8 +18,8 @@ EMSCRIPTEN_KEEPALIVE std::string js_getline() {
     std::istream in(&cmd);
     bool success;
     
-    if (cmd.index == 0) {uci_global.engine.load_big_network(in); success = true;}
-    else if (cmd.index == 1) {uci_global.engine.load_small_network(in); success = true;}
+    if (cmd.index == 0) {uci_global->engine.load_big_network(in); success = true;}
+    else if (cmd.index == 1) {uci_global->engine.load_small_network(in); success = true;}
     else success = false;
 
     if (!success) std::cerr << "BAD_NNUE " << cmd.index << std::endl;
