@@ -19,7 +19,7 @@ targets = {
     "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "", "version": "version_1"},
     "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "", "version": "version_1"},
     "sf161-70": {"url": stockfish_repo, "commit": "e67cc97", "cxx_flags": "", "version": "version_2"}, # 16.1
-    "sf17-80": {"url": stockfish_repo, "commit": "ae9e55c", "cxx_flags": "", "version": "version_3"}, # 17
+    "sf17-80": {"url": stockfish_repo, "commit": "e0bfc4b", "cxx_flags": "", "version": "version_3"}, # 17
     "sfhce": {"url": stockfish_repo, "commit": "9587eee", "version": "version_0"}, # sf classical
 }
 
