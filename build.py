@@ -78,13 +78,13 @@ def main():
     parser.add_argument(
         "target",
         nargs="*",
-        help=f"{', '.join(list(targets.keys()))}, clean, or all (default: 'sf16-40')",
+        help=f"{', '.join(list(targets.keys()))}, clean, or all (default: 'sf17-80')",
     )
 
     args = parser.parse_args()
     arg_targets = list(args.target)
     if len(arg_targets) == 0:
-        arg_targets = ["sf16-40"]
+        arg_targets = ["sf17-80"]
 
     if "clean" in arg_targets:
         clean()
