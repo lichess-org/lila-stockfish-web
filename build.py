@@ -171,7 +171,7 @@ def assert_emsdk():
         version_match = re.search(r"([\d]+)\.([\d]+)\.([\d]+)", result.stdout)
         if version_match:
             major, minor, patch = version_match.groups()
-            if int(major) < 3 or (int(major) == 3 and int(minor) < 1) or (int(major) == 3 and int(minor) == 1 and int(patch) < 59):
+            if (int(major), int(minor), int(patch)) < (3, 1, 65):
                 print("emsdk 3.1.59 or later is required")
                 exit(1)
             else:
