@@ -55,7 +55,7 @@ Edit the Stockfish sources freely. But to contribute your edits, use a patch fil
 - big nnue: [nn-b1a57edbea57.nnue](https://tests.stockfishchess.org/nns?network_name=nn-b1a57edbea57)
 - small nnue: [nn-baff1ede1f90.nnue](https://tests.stockfishchess.org/nns?network_name=nn-baff1ede1f90)
 
-### sf17-80 (Official Stockfish 17 release)
+### sf17-79 (Official Stockfish 17 release)
 - repo: https://github.com/official-stockfish/Stockfish
 - commit: [e0bfc4b](https://github.com/official-stockfish/Stockfish/commit/e0bfc4b)
 - tag: sf_17
