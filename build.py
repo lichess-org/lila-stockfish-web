@@ -3,6 +3,7 @@ import argparse
 import subprocess
 import glob
 import os
+import os.path
 import re
 
 stockfish_repo = "https://github.com/official-stockfish/Stockfish"
@@ -27,7 +28,11 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 fishes_dir = os.path.join(script_dir, "fishes")
 patches_dir = os.path.join(script_dir, "patches")
 
-ignore_sources = ["syzygy/tbprobe.cpp", "pyffish.cpp", "ffishjs.cpp"]
+ignore_sources = [
+    os.path.join("syzygy", "tbprobe.cpp"),
+    "pyffish.cpp",
+    "ffishjs.cpp",
+]
 
 
 def makefile(target, sources, flags, link_flags):
