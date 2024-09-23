@@ -9,6 +9,12 @@ import re
 stockfish_repo = "https://github.com/official-stockfish/Stockfish"
 fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
 
+# emscripten version requirements
+
+MAJOR = 3
+MINOR = 1
+PATCH = 65
+
 # compatiblity modes:
 # - sfhce: VERSION_0
 # - fsf14, sf16-7, sf16-40: VERSION_1
@@ -176,8 +182,8 @@ def assert_emsdk():
         version_match = re.search(r"([\d]+)\.([\d]+)\.([\d]+)", result.stdout)
         if version_match:
             major, minor, patch = version_match.groups()
-            if (int(major), int(minor), int(patch)) < (3, 1, 65):
-                print("emsdk 3.1.59 or later is required")
+            if (int(major), int(minor), int(patch)) < (MAJOR, MINOR, PATCH):
+                print(f"emsdk {MAJOR}.{MINOR}.{PATCH} or later is required")
                 exit(1)
             else:
                 return
