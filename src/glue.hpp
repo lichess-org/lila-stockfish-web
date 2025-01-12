@@ -43,17 +43,3 @@ struct {
 
 const char* get_nnue_name(int index);
 const std::string load_nnue_cmd(Command& cmd);
-
-EMSCRIPTEN_KEEPALIVE std::string js_getline();
-
-extern "C" {
-  EMSCRIPTEN_KEEPALIVE void uci(const char* utf8) { inQ.push(Command(utf8)); }
-
-  EMSCRIPTEN_KEEPALIVE void setNnueBuffer(char* buf, size_t sz, int index) {
-    inQ.push(Command(buf, sz, index));
-  }
-
-  EMSCRIPTEN_KEEPALIVE const char* getRecommendedNnue(int index) {
-    return get_nnue_name(index);
-  }
-}

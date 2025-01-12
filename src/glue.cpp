@@ -5,6 +5,18 @@
 #include "uci.h"
 #include "nnue/nnue_architecture.h"
 
+extern "C" {
+  EMSCRIPTEN_KEEPALIVE void uci(const char* utf8) { inQ.push(Command(utf8)); }
+
+  EMSCRIPTEN_KEEPALIVE void setNnueBuffer(char* buf, size_t sz, int index) {
+    inQ.push(Command(buf, sz, index));
+  }
+
+  EMSCRIPTEN_KEEPALIVE const char* getRecommendedNnue(int index) {
+    return get_nnue_name(index);
+  }
+}
+
 EMSCRIPTEN_KEEPALIVE std::string js_getline() {
   auto cmd = inQ.pop();
   if (cmd.type == cmd.UCI)
