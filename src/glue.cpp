@@ -21,10 +21,10 @@ EMSCRIPTEN_KEEPALIVE std::string js_getline() {
   auto cmd = inQ.pop();
   if (cmd.type == cmd.UCI)
     return cmd.uci;
-  else if (cmd.type == cmd.NNUE && cmd.ptr) {
+  else if (cmd.type == cmd.NNUE && cmd.ptr)
     return load_nnue_cmd(cmd);
-  }
-  return "";
+  else
+    return "";
 }
 
 #if __has_include("nnue/evaluate_nnue.h") // single nnue
@@ -32,7 +32,8 @@ EMSCRIPTEN_KEEPALIVE std::string js_getline() {
 
   const std::string load_nnue_cmd(Command& cmd) {
     std::istream in(&cmd);
-    if (Stockfish::Eval::NNUE::load_eval("", in)) return "setoption name Use NNUE value true";
+    if (Stockfish::Eval::NNUE::load_eval("", in))
+      return "setoption name Use NNUE value true";
     else std::cerr << "BAD_NNUE" << std::endl;
     return "setoption name Use NNUE value false";
   }
@@ -72,4 +73,4 @@ namespace Stockfish::Tablebases {
 
   bool root_probe(Position& p, Search::RootMoves& rM) { return false; }
   bool root_probe_wdl(Position& p, Search::RootMoves& rM) { return false; }
-}  // namespace Stockfish::Tablebases
+}
