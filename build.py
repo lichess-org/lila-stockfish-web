@@ -13,21 +13,13 @@ fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
 
 MAJOR = 3
 MINOR = 1
-PATCH = 65
-
-# compatiblity modes:
-# - sfhce: VERSION_0
-# - fsf14, sf16-7, sf16-40: VERSION_1
-# - sf16.1: VERSION_2
-# - sf17-79: VERSION_3
+PATCH = 74
 
 targets = {
-    "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": "", "version": "version_1"},
-    "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "", "version": "version_1"},
-    "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": "", "version": "version_1"},
-    "sf161-70": {"url": stockfish_repo, "commit": "e67cc97", "cxx_flags": "", "version": "version_2"}, # 16.1
-    "sf17-79": {"url": stockfish_repo, "commit": "e0bfc4b", "cxx_flags": "", "version": "version_3"}, # 17
-    "sfhce": {"url": stockfish_repo, "commit": "9587eee", "version": "version_0"}, # sf classical
+    "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": ""},
+    "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": ""},
+    "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": ""},
+    "sf17-79": {"url": stockfish_repo, "commit": "e0bfc4b", "cxx_flags": ""}, # 17
 }
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -43,8 +35,6 @@ ignore_sources = [
 
 def makefile(target, sources, flags, link_flags):
     flags = " ".join([flags.strip(), targets[target].get("cxx_flags", "").strip()])
-    version = targets[target].get("version")
-    glue_filename = f"glue_{version}"
     # DO NOT replace tabs with spaces
     # fmt: off
     return f"""
@@ -63,7 +53,7 @@ LD_FLAGS = {link_flags} \\
 	-sALLOW_BLOCKING_ON_MAIN_THREAD=0 -sEXIT_RUNTIME -Wno-pthreads-mem-growth
 
 SRCS = {sources}
-OBJS = $(addprefix src/, $(SRCS:.cpp=.o)) src/{glue_filename}.o
+OBJS = $(addprefix src/, $(SRCS:.cpp=.o)) src/glue.o
 
 $(EXE).js: $(OBJS)
 	$(CXX) $(CXX_FLAGS) $(LD_FLAGS) $(OBJS) -o $(EXE).js
@@ -71,7 +61,7 @@ $(EXE).js: $(OBJS)
 %.o: %.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
-src/{glue_filename}.o: ../../src/{glue_filename}.cpp
+src/glue.o: ../../src/glue.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 """

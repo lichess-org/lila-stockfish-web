@@ -1,13 +1,11 @@
 {
   "name": "lila-stockfish-web",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": "T-bone Duplexus",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "types": "stockfishWeb.d.ts",
   "files": [
-    "sfhce.js",
-    "sfhce.wasm",
     "sf16-7.js",
     "sf16-7.wasm",
     "sf17-79.js",
