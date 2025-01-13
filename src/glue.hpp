@@ -20,7 +20,7 @@ struct Command : public std::streambuf {
   using std::streambuf::seekpos;
 };
 
-struct {
+struct CommandQueue {
   std::mutex m;
   std::queue<Command> q;
   std::condition_variable cv;
@@ -39,7 +39,4 @@ struct {
     q.pop();
     return el;
   }
-} inQ;
-
-const char* get_nnue_name(int index);
-const std::string load_nnue_cmd(Command& cmd);
+};

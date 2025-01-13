@@ -35,22 +35,22 @@ ignore_sources = [
 
 def makefile(target, sources, flags, link_flags):
     flags = " ".join([flags.strip(), targets[target].get("cxx_flags", "").strip()])
-    # DO NOT replace tabs with spaces
-    # fmt: off
+# DO NOT replace tabs with spaces
+# fmt: off
     return f"""
 
 CXX = em++
 EXE = {target}
 
-CXX_FLAGS = {flags} -Isrc -pthread -msse -msse2 -mssse3 -msse4.1 -msimd128 -flto -fno-exceptions \\
+CXX_FLAGS = {flags} -Isrc -pthread -msimd128 -mavx -flto -fno-exceptions \\
 	-DUSE_POPCNT -DUSE_SSE2 -DUSE_SSSE3 -DUSE_SSE41 -DNO_PREFETCH -DNNUE_EMBEDDING_OFF
 
 LD_FLAGS = {link_flags} \\
-	--pre-js=../../src/initModule.js -sEXPORT_ES6 -sEXPORT_NAME={mod_name(target)} -sFILESYSTEM=0 \\
+	--pre-js=../../src/initModule.js -sEXIT_RUNTIME -sEXPORT_ES6 -sEXPORT_NAME={mod_name(target)} \\
 	-sEXPORTED_FUNCTIONS='[_malloc,_main]' -sEXPORTED_RUNTIME_METHODS='[stringToUTF8,UTF8ToString,HEAPU8]' \\
 	-sINCOMING_MODULE_JS_API='[locateFile,print,printErr,wasmMemory,buffer,instantiateWasm]' \\
 	-sINITIAL_MEMORY=64MB -sALLOW_MEMORY_GROWTH -sSTACK_SIZE=2MB -sSTRICT -sPROXY_TO_PTHREAD \\
-	-sALLOW_BLOCKING_ON_MAIN_THREAD=0 -sEXIT_RUNTIME -Wno-pthreads-mem-growth
+	-sALLOW_BLOCKING_ON_MAIN_THREAD=0 -Wno-pthreads-mem-growth
 
 SRCS = {sources}
 OBJS = $(addprefix src/, $(SRCS:.cpp=.o)) src/glue.o
