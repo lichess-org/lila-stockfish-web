@@ -11,15 +11,16 @@ fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
 
 # emscripten version requirements
 
-MAJOR = 3
-MINOR = 1
-PATCH = 74
+MAJOR = 4
+MINOR = 0
+PATCH = 6
 
 targets = {
     "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": ""},
     "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": ""},
     "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": ""},
     "sf17-79": {"url": stockfish_repo, "commit": "e0bfc4b", "cxx_flags": ""}, # 17
+    "sf171-79": {"url": stockfish_repo, "commit": "03e2748", "cxx_flags": ""}, # 17.1
 }
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -79,13 +80,13 @@ def main():
     parser.add_argument(
         "target",
         nargs="*",
-        help=f"{', '.join(list(targets.keys()))}, clean, or all (default: 'sf17-79')",
+        help=f"{', '.join(list(targets.keys()))}, clean, or all (default: 'sf171-79')",
     )
 
     args = parser.parse_args()
     arg_targets = list(args.target)
     if len(arg_targets) == 0:
-        arg_targets = ["sf17-79"]
+        arg_targets = ["sf171-79"]
 
     if "clean" in arg_targets:
         clean()
