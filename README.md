@@ -20,11 +20,11 @@ use `--flags` to override the default emcc flags which are `-O3 -DNDEBUG --closu
 
 check `./build.py --help` for the latest targets
 
-`./build.py` downloads sources to the `./fishes` folder then applies diffs from the `./patches` folder. 
+`./build.py` downloads sources to the `./fishes` folder then applies diffs from the `./patches` folder.
 Edit the Stockfish sources freely. But to contribute your edits, use a patch file
 
 ```
-# Example: Update `sf16-7.patch` with your source changes: 
+# Example: Update `sf16-7.patch` with your source changes:
 
   cd fishes/sf16-7
   git diff > ../../patches/sf16-7.patch
@@ -48,18 +48,11 @@ Edit the Stockfish sources freely. But to contribute your edits, use a patch fil
 - commit: [c97f5cb](https://github.com/linrock/Stockfish/commit/c97f5cb)
 - nnue: [nn-ecb35f70ff2a.nnue](https://tests.stockfishchess.org/nns?network_name=nn-ecb35f70ff2a)
 
-### sf161-70 (Official Stockfish 16.1 release)
+### sf171-79 (Official Stockfish 17.1 release)
 - repo: https://github.com/official-stockfish/Stockfish
-- commit: [e67cc97](https://github.com/official-stockfish/Stockfish/commit/e67cc97)
-- tag: sf_16.1
-- big nnue: [nn-b1a57edbea57.nnue](https://tests.stockfishchess.org/nns?network_name=nn-b1a57edbea57)
-- small nnue: [nn-baff1ede1f90.nnue](https://tests.stockfishchess.org/nns?network_name=nn-baff1ede1f90)
-
-### sf17-79 (Official Stockfish 17 release)
-- repo: https://github.com/official-stockfish/Stockfish
-- commit: [e0bfc4b](https://github.com/official-stockfish/Stockfish/commit/e0bfc4b)
-- tag: sf_17
-- big nnue: [nn-1111cefa1111.nnue](https://tests.stockfishchess.org/api/nn/nn-1111cefa1111.nnue)
+- commit: [03e2748](https://github.com/official-stockfish/Stockfish/commit/03e27488f3d21d8ff4dbf3065603afa21dbd0ef3)
+- tag: sf_17.1
+- big nnue: [nn-1111cefa1111.nnue](https://tests.stockfishchess.org/api/nn/nn-1c0000000000.nnue)
 - small nnue: [nn-37f18f62d772.nnue](//tests.stockfishchess.org/api/nn/nn-37f18f62d772.nnue)
 
 ### fsf14 (Fairy-Stockfish 14)

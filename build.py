@@ -19,7 +19,6 @@ targets = {
     "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": ""},
     "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": ""},
     "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": ""},
-    "sf17-79": {"url": stockfish_repo, "commit": "e0bfc4b", "cxx_flags": ""}, # 17
     "sf171-79": {"url": stockfish_repo, "commit": "03e2748", "cxx_flags": ""}, # 17.1
 }
 
@@ -169,7 +168,7 @@ def assert_emsdk():
         if result.stderr:
             print("Error:", result.stderr)
             exit(1)
-        
+
         version_match = re.search(r"([\d]+)\.([\d]+)\.([\d]+)", result.stdout)
         if version_match:
             major, minor, patch = version_match.groups()
