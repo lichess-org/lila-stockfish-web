@@ -1,0 +1,51 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. v1.0.0)"
+        required: true
+      description:
+        description: "Release description"
+        required: false
+        default: "New release of lila-stockfish-web"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Verify Emscripten
+        run: emcc --version
+
+      - name: Build all stockfish variants
+        run: ./build.py --flags='-O3 -DNDEBUG --closure=1' all
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          body: ${{ github.event.inputs.description }}
+          draft: false
+          prerelease: false
+          files: |
+            ./sfhce.js
+            ./sfhce.wasm
+            ./sf16-40.js
+            ./sf16-40.wasm
+            ./sf16-7.js
+            ./sf16-7.wasm
+            ./sf171-79.js
+            ./sf171-79.wasm
+            ./fsf14.js
+            ./fsf14.wasm
+            ./LICENSE
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
