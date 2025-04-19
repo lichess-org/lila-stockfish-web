@@ -5,6 +5,7 @@ import glob
 import os
 import os.path
 import re
+import requests
 
 stockfish_repo = "https://github.com/official-stockfish/Stockfish"
 fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
@@ -109,6 +110,7 @@ def main():
 def build_target(target, flags, node):  # changes cwd
     target_dir = os.path.join(fishes_dir, target)
     fetch_sources(target)
+    fetch_network(target)
 
     os.chdir(os.path.join(target_dir, "src"))
 
@@ -144,6 +146,29 @@ def fetch_sources(target):
             check=True,
         )
 
+# parse the evaluate.h file for EvalFileDefaultNameBig, EvalFileDefaultNameSmall and download those nets
+def fetch_network(target):
+    def download_nn(net_name, output_path):
+        url = f"https://data.stockfishchess.org/nn/{net_name}"
+        response = requests.get(url, stream=True)
+
+        if response.status_code == 200:
+            with open(os.path.join(output_path, net_name), 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            print(f"Download of {net_name} successful")
+        else:
+            print(f"Error downloading {net_name}: {response.status_code}")
+
+    target_dir = os.path.join(fishes_dir, target)
+
+    with open(os.path.join(target_dir, "src", "evaluate.h"), "r") as f:
+        lines = f.readlines()
+        for line in lines:
+            if any(name in line for name in ["EvalFileDefaultNameBig", "EvalFileDefaultNameSmall", "EvalFileDefaultNameTiny"]):
+                net = line.split('"')[1]
+                print(f"Downloading https://data.stockfishchess.org/nn/{net}")
+                download_nn(net, script_dir)
 
 def clean():
     clean_list = [
