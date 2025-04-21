@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "<major>.<minor>.<patch>"
+        description: "Release version (e.g. v1.0.0)"
         required: true
       description:
         description: "Release description"
@@ -41,13 +41,14 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Rev version in package.json and push version bump
+      - name: Rev package.json and push version bump
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          npm version ${{ github.event.inputs.version }}
-          git push origin HEAD
-          git push origin v${{ github.event.inputs.version }}
+          npm version ${VERSION#v}
+          git push origin HEAD --follow-tags
+        env:
+          VERSION: ${{ github.event.inputs.version }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
