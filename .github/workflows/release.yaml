@@ -27,6 +27,21 @@ jobs:
       - name: Build all stockfish variants
         run: ./build.py --flags='-O3 -DNDEBUG --closure=1' all
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Rev version in package.json
+        run: npm version ${{ github.event.inputs.version }}
+
+      - name: Push version bump
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git push origin HEAD
+          git push origin v${{ github.event.inputs.version }}
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -36,16 +51,19 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./sfhce.js
-            ./sfhce.wasm
-            ./sf16-40.js
-            ./sf16-40.wasm
             ./sf16-7.js
             ./sf16-7.wasm
             ./sf171-79.js
             ./sf171-79.wasm
             ./fsf14.js
             ./fsf14.wasm
+            ./package.json
+            ./stockfishWeb.d.ts
             ./LICENSE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm
+        run: npm publish --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
