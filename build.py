@@ -14,7 +14,7 @@ fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
 
 MAJOR = 4
 MINOR = 0
-PATCH = 6
+PATCH = 7
 
 targets = {
     "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": ""},
@@ -48,7 +48,7 @@ CXX_FLAGS = {flags} -Isrc -pthread -msimd128 -mavx -flto -fno-exceptions \\
 LD_FLAGS = {link_flags} \\
 	--pre-js=../../src/initModule.js -sEXIT_RUNTIME -sEXPORT_ES6 -sEXPORT_NAME={mod_name(target)} \\
 	-sEXPORTED_FUNCTIONS='[_malloc,_main]' -sEXPORTED_RUNTIME_METHODS='[stringToUTF8,UTF8ToString,HEAPU8]' \\
-	-sINCOMING_MODULE_JS_API='[locateFile,print,printErr,wasmMemory,buffer,instantiateWasm]' \\
+	-sINCOMING_MODULE_JS_API='[locateFile,print,printErr,wasmMemory,buffer,instantiateWasm,mainScriptUrlOrBlob]' \\
 	-sINITIAL_MEMORY=64MB -sALLOW_MEMORY_GROWTH -sSTACK_SIZE=3MB -sSTRICT -sPROXY_TO_PTHREAD \\
 	-sALLOW_BLOCKING_ON_MAIN_THREAD=0 -Wno-pthreads-mem-growth
 
@@ -76,6 +76,7 @@ def main():
     parser = argparse.ArgumentParser(description="build stockfish wasms")
     parser.add_argument("--flags", help="em++ cxxflags", default="-O3 -DNDEBUG --closure=1")
     parser.add_argument("--node", action="store_true", help="target node.js")
+    parser.add_argument("--emcc", action="store_true", help="print required emscripten version")
     parser.add_argument(
         "target",
         nargs="*",
@@ -83,6 +84,10 @@ def main():
     )
 
     args = parser.parse_args()
+    if args.emcc:
+        print(f"{MAJOR}.{MINOR}.{PATCH}")
+        exit(0)
+
     arg_targets = list(args.target)
     if len(arg_targets) == 0:
         arg_targets = ["sf171-79"]

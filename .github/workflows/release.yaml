@@ -21,8 +21,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Get required emcc version
+        id: emscripten
+        run: echo "VERSION=$(./build.py --emcc)" >> "$GITHUB_OUTPUT"
+
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{ steps.emscripten.outputs.VERSION }}
 
       - name: Verify Emscripten
         run: emcc --version
