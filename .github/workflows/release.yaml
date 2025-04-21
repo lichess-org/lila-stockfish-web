@@ -4,12 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version (e.g. v1.0.0)"
+        description: "<major>.<minor>.<patch>"
         required: true
       description:
         description: "Release description"
         required: false
-        default: "New release of lila-stockfish-web"
+        default: ""
+
+permissions:
+  contents: write
 
 jobs:
   build:
