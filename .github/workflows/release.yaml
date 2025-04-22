@@ -36,7 +36,7 @@ jobs:
       - name: Build all stockfish variants
         run: ./build.py --flags='-O3 -DNDEBUG --closure=1' all
 
-      - name: Set up Node.js
+      - name: Set up node (for npm)
         uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -73,6 +73,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to npm
-        run: npm publish --dry-run
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NODE_AUTH_TOKEN }}" > ~/.npmrc
+          npm publish --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
