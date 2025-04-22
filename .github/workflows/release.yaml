@@ -1,0 +1,81 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. v1.0.0)"
+        required: true
+      description:
+        description: "Release description"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate version format
+        run: |
+          [[ "${{ github.event.inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]] || \
+          (echo "Version must start with 'v'" && exit 1)
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get required emcc version
+        id: emscripten
+        run: echo "VERSION=$(./build.py --emcc)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{ steps.emscripten.outputs.VERSION }}
+
+      - name: Verify Emscripten
+        run: emcc --version
+
+      - name: Build all stockfish variants
+        run: ./build.py --flags='-O3 -DNDEBUG --closure=1' all
+
+      - name: Set up node (for npm)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Rev package.json and push version bump
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          VERSION_CLEAN="${VERSION#v}"
+          npm version "$VERSION_CLEAN"
+          git push origin HEAD --follow-tags
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          body: ${{ github.event.inputs.description }}
+          draft: false
+          prerelease: false
+          files: |
+            ./*.js
+            ./*.wasm
+            ./package.json
+            ./stockfishWeb.d.ts
+            ./LICENSE
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NODE_AUTH_TOKEN }}" > ~/.npmrc
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}

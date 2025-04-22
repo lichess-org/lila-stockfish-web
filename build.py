@@ -5,6 +5,7 @@ import glob
 import os
 import os.path
 import re
+import requests
 
 stockfish_repo = "https://github.com/official-stockfish/Stockfish"
 fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
@@ -13,12 +14,11 @@ fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
 
 MAJOR = 4
 MINOR = 0
-PATCH = 6
+PATCH = 7
 
 targets = {
     "fsf14": {"url": fairy_stockfish_repo, "commit": "a621470", "cxx_flags": ""},
     "sf16-7": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": ""},
-    "sf16-40": {"url": stockfish_repo, "commit": "68e1e9b", "cxx_flags": ""},
     "sf171-79": {"url": stockfish_repo, "commit": "03e2748", "cxx_flags": ""}, # 17.1
 }
 
@@ -48,7 +48,7 @@ CXX_FLAGS = {flags} -Isrc -pthread -msimd128 -mavx -flto -fno-exceptions \\
 LD_FLAGS = {link_flags} \\
 	--pre-js=../../src/initModule.js -sEXIT_RUNTIME -sEXPORT_ES6 -sEXPORT_NAME={mod_name(target)} \\
 	-sEXPORTED_FUNCTIONS='[_malloc,_main]' -sEXPORTED_RUNTIME_METHODS='[stringToUTF8,UTF8ToString,HEAPU8]' \\
-	-sINCOMING_MODULE_JS_API='[locateFile,print,printErr,wasmMemory,buffer,instantiateWasm]' \\
+	-sINCOMING_MODULE_JS_API='[locateFile,print,printErr,wasmMemory,buffer,instantiateWasm,mainScriptUrlOrBlob]' \\
 	-sINITIAL_MEMORY=64MB -sALLOW_MEMORY_GROWTH -sSTACK_SIZE=3MB -sSTRICT -sPROXY_TO_PTHREAD \\
 	-sALLOW_BLOCKING_ON_MAIN_THREAD=0 -Wno-pthreads-mem-growth
 
@@ -76,6 +76,8 @@ def main():
     parser = argparse.ArgumentParser(description="build stockfish wasms")
     parser.add_argument("--flags", help="em++ cxxflags", default="-O3 -DNDEBUG --closure=1")
     parser.add_argument("--node", action="store_true", help="target node.js")
+    parser.add_argument("--nnue", action="store_true", help="download recommended nnues")
+    parser.add_argument("--emcc", action="store_true", help="print required emscripten version")
     parser.add_argument(
         "target",
         nargs="*",
@@ -83,6 +85,10 @@ def main():
     )
 
     args = parser.parse_args()
+    if args.emcc:
+        print(f"{MAJOR}.{MINOR}.{PATCH}")
+        exit(0)
+
     arg_targets = list(args.target)
     if len(arg_targets) == 0:
         arg_targets = ["sf171-79"]
@@ -102,6 +108,8 @@ def main():
     try:
         for target in arg_targets:
             build_target(target, args.flags, args.node)
+            if args.nnue:
+                fetch_network(target)
     except Exception as e:
         print(e)
 
@@ -144,6 +152,29 @@ def fetch_sources(target):
             check=True,
         )
 
+# parse the evaluate.h file for EvalFileDefaultNameBig, EvalFileDefaultNameSmall and download those nets
+def fetch_network(target):
+    def download_nn(net_name, output_path):
+        url = f"https://data.stockfishchess.org/nn/{net_name}"
+        response = requests.get(url, stream=True)
+
+        if response.status_code == 200:
+            with open(os.path.join(output_path, net_name), 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            print(f"Download of {net_name} successful")
+        else:
+            print(f"Error downloading {net_name}: {response.status_code}")
+
+    target_dir = os.path.join(fishes_dir, target)
+
+    with open(os.path.join(target_dir, "src", "evaluate.h"), "r") as f:
+        lines = f.readlines()
+        for line in lines:
+            if any(name in line for name in ["EvalFileDefaultNameBig", "EvalFileDefaultNameSmall", "EvalFileDefaultNameTiny"]):
+                net = line.split('"')[1]
+                print(f"Downloading https://data.stockfishchess.org/nn/{net}")
+                download_nn(net, script_dir)
 
 def clean():
     clean_list = [

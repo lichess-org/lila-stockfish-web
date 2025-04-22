@@ -30,6 +30,22 @@ Edit the Stockfish sources freely. But to contribute your edits, use a patch fil
   git diff > ../../patches/sf16-7.patch
 ```
 
+## Run locally
+
+```
+./build.py --node
+node ./src/wasm-cli.js ./sf171-79.js
+```
+
+Now you'll have to set the uci options for the nnue.
+```
+nn-1c0000000000.nnue
+small nn-37f18f62d772.nnue
+```
+
+_The specific file names might change, so check the output of `uci` for the correct names._
+
+
 ## Sources
 
 ### sfhce (Official Stockfish Classical release)
