@@ -76,6 +76,7 @@ def main():
     parser = argparse.ArgumentParser(description="build stockfish wasms")
     parser.add_argument("--flags", help="em++ cxxflags", default="-O3 -DNDEBUG --closure=1")
     parser.add_argument("--node", action="store_true", help="target node.js")
+    parser.add_argument("--nnue", action="store_true", help="download recommended nnues")
     parser.add_argument("--emcc", action="store_true", help="print required emscripten version")
     parser.add_argument(
         "target",
@@ -107,6 +108,8 @@ def main():
     try:
         for target in arg_targets:
             build_target(target, args.flags, args.node)
+            if args.nnue:
+                fetch_network(target)
     except Exception as e:
         print(e)
 
@@ -114,7 +117,6 @@ def main():
 def build_target(target, flags, node):  # changes cwd
     target_dir = os.path.join(fishes_dir, target)
     fetch_sources(target)
-    fetch_network(target)
 
     os.chdir(os.path.join(target_dir, "src"))
 
