@@ -39,7 +39,7 @@ node ./src/wasm-cli.js ./sf171-79.js
 
 Now you'll have to set the uci options for the nnue.
 ```
-nn-1c0000000000.nnue
+big nn-1c0000000000.nnue
 small nn-37f18f62d772.nnue
 ```
 
