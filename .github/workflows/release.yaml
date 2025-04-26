@@ -28,7 +28,7 @@ jobs:
 
       - name: Get required emcc version
         id: emscripten
-        run: echo "VERSION=$(./build.py --emcc)" >> "$GITHUB_OUTPUT"
+        run: echo "VERSION=$(./build.py --emcc-version)" >> "$GITHUB_OUTPUT"
 
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v14

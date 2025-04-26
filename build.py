@@ -80,7 +80,7 @@ def main():
     parser.add_argument("--flags", help="em++ cxxflags", default="-O3 -DNDEBUG --closure=1")
     parser.add_argument("--node", action="store_true", help="target node.js")
     parser.add_argument("--nnue", action="store_true", help="download recommended nnues")
-    parser.add_argument("--emcc", action="store_true", help="print required emscripten version")
+    parser.add_argument("--emcc-version", action="store_true", help="print required emscripten version")
     parser.add_argument(
         "target",
         nargs="*",
@@ -88,7 +88,7 @@ def main():
     )
 
     args = parser.parse_args()
-    if args.emcc:
+    if args.emcc_version:
         print(f"{MAJOR}.{MINOR}.{PATCH}")
         exit(0)
 
