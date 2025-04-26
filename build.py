@@ -5,7 +5,10 @@ import glob
 import os
 import os.path
 import re
-import requests
+try:
+    import requests
+except ImportError:
+    requests = None
 
 stockfish_repo = "https://github.com/official-stockfish/Stockfish"
 fairy_stockfish_repo = "https://github.com/fairy-stockfish/Fairy-Stockfish"
@@ -154,6 +157,9 @@ def fetch_sources(target):
 
 # parse the evaluate.h file for EvalFileDefaultNameBig, EvalFileDefaultNameSmall and download those nets
 def fetch_network(target):
+    if requests is None:
+        print("requests module not found, skipping nnue download")
+        return
     def download_nn(net_name, output_path):
         url = f"https://data.stockfishchess.org/nn/{net_name}"
         response = requests.get(url, stream=True)

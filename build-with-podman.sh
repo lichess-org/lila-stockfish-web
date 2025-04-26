@@ -1,1 +1,3 @@
-podman run --rm -v "$PWD":/lsfw -w /lsfw docker.io/emscripten/emsdk:4.0.6 sh -c 'python3 build.py "$@"' -- "$@"
+VERSION=$(python3 $(dirname "${BASH_SOURCE[0]}")/build.py --emcc)
+
+podman run --rm -v "$PWD":/lsfw -w /lsfw "docker.io/emscripten/emsdk:$VERSION" sh -c 'python3 build.py "$@"' -- "$@"
