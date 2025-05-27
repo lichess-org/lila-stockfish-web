@@ -1,30 +1,28 @@
-name: Create Release
+name: Release
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version (e.g. v1.0.0)"
+        description: "Version tag (e.g. v1.2.3)"
         required: true
       description:
-        description: "Release description"
+        description: "Description"
         required: false
         default: ""
-
-permissions:
-  contents: write
-
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Validate version format
-        run: |
+      - run: |
           [[ "${{ github.event.inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]] || \
-          (echo "Version must start with 'v'" && exit 1)
-
-      - name: Checkout code
-        uses: actions/checkout@v4
+          (echo "Version must start with 'v' and match 'v<major>.<minor>.<patch>'" && exit 1)
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
 
       - name: Get required emcc version
         id: emscripten
@@ -45,16 +43,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          registry-url: https://registry.npmjs.org/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: Rev package.json and push version bump
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          VERSION_CLEAN="${VERSION#v}"
-          npm version "$VERSION_CLEAN"
+          NPM_VERSION="${GITHUB_VERSION#v}"
+          npm version "$NPM_VERSION"
           git push origin HEAD --follow-tags
         env:
-          VERSION: ${{ github.event.inputs.version }}
+          GITHUB_VERSION: ${{ github.event.inputs.version }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -74,8 +75,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to npm
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NODE_AUTH_TOKEN }}" > ~/.npmrc
-          npm publish --access public
-        # env:
-        #   NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+        run: npm publish --provenance --access public
