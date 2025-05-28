@@ -17,38 +17,35 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - run: |
+      - name: Validate version
+        run: |
           [[ "${{ github.event.inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]] || \
           (echo "Version must start with 'v' and match 'v<major>.<minor>.<patch>'" && exit 1)
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
 
-      - name: Get required emcc version
+      - name: Setup emscripten
         id: emscripten
         run: echo "VERSION=$(./build.py --emcc-version)" >> "$GITHUB_OUTPUT"
 
-      - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
+      - uses: mymindstorm/setup-emsdk@v14
         with:
           version: ${{ steps.emscripten.outputs.VERSION }}
+      - run: emcc --version
 
-      - name: Verify Emscripten
-        run: emcc --version
+      - name: Build stockfishes
+        run: ./build.py all
 
-      - name: Build all stockfish variants
-        run: ./build.py --flags='-O3 -DNDEBUG --closure=1' all
-
-      - name: Set up node (for npm)
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: "20"
           registry-url: https://registry.npmjs.org/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
-      - name: Bump package.json version
+      - name: Bump package.json
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
@@ -62,19 +59,9 @@ jobs:
           npm publish --provenance --access public
           git push origin HEAD --follow-tags
 
-      - name: Create Release
+      - name: Publish to github
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: Release ${{ github.event.inputs.version }}
           body: ${{ github.event.inputs.description }}
-          draft: false
-          prerelease: false
-          files: |
-            ./*.js
-            ./*.wasm
-            ./package.json
-            ./stockfishWeb.d.ts
-            ./LICENSE
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
