@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - run: |
           [[ "${{ github.event.inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]] || \
@@ -47,15 +48,19 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
-      - name: Rev package.json and push version bump
+      - name: Bump package.json version
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           NPM_VERSION="${GITHUB_VERSION#v}"
           npm version "$NPM_VERSION"
-          git push origin HEAD --follow-tags
         env:
           GITHUB_VERSION: ${{ github.event.inputs.version }}
+
+      - name: Publish to npm
+        run: |
+          npm publish --provenance --access public
+          git push origin HEAD --follow-tags
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -73,6 +78,3 @@ jobs:
             ./LICENSE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish to npm
-        run: npm publish --provenance --access public
