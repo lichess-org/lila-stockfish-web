@@ -1,6 +1,7 @@
 {
   "name": "@lichess-org/stockfish-web",
   "version": "0.0.13",
+  "//": "version is managed by the build system",
   "author": "T-bone Duplexus",
   "license": "AGPL-3.0-or-later",
   "type": "module",
